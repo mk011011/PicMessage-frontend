@@ -1,11 +1,12 @@
 //메인 페이지
-import React from 'react';
+import React, { useState } from 'react'; // useState 불러오기
 import ContactList from '../components/ContactList';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/images/logo.png'; // 로고 이미지를 불러옵니다.
 
 const MainPage = () => {
     const navigate = useNavigate();
+    const [message, setMessage] = useState(''); // 입력된 메시지를 상태로 관리
 
     return (
         <div style={styles.container}>
@@ -21,7 +22,12 @@ const MainPage = () => {
                 {/* 문자 자동생성 섹션 */}
                 <div style={styles.section}>
                     <label style={styles.label}>메시지</label>
-                    <textarea style={styles.textArea} placeholder="메시지를 입력하세요"></textarea>
+                    <textarea
+                        style={styles.textArea}
+                        placeholder="메시지를 입력하세요"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)} // 메시지 업데이트
+                    ></textarea>
                     <button style={styles.button} onClick={() => navigate('/message-generation')}>문자 자동생성</button>
                 </div>
 
@@ -29,7 +35,12 @@ const MainPage = () => {
                 <div style={styles.section}>
                     <label style={styles.label}>이미지</label>
                     <div style={styles.imageBox}>이미지가 여기에 표시됩니다.</div>
-                    <button style={styles.button} onClick={() => navigate('/image-generation')}>이미지 자동생성</button>
+                    <button
+                        style={styles.button}
+                        onClick={() => navigate('/image-generation', { state: { message } })} // 상태 전달
+                    >
+                        이미지 자동생성
+                    </button>
                 </div>
             </div>
 

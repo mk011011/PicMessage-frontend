@@ -1,23 +1,35 @@
-//이미지 자동생성 페이지
+// ImageGeneration.js
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 const ImageGeneration = () => {
-  return (
-    <div>
-      <h2>이미지 자동생성 페이지</h2>
-      <div style={styles.imageBox}>이미지가 여기에 표시됩니다.</div>
-    </div>
-  );
+    const location = useLocation();
+    const message = location.state?.message || ''; // 전달된 메시지를 받아옴
+
+    return (
+        <div>
+            <h2>이미지 자동생성 페이지</h2>
+            <textarea
+                style={styles.textArea}
+                value={message}
+                readOnly // 수정 불가
+            ></textarea>
+        </div>
+    );
 };
 
 const styles = {
-  imageBox: {
-    width: '300px',
-    height: '150px',
-    border: '1px solid #ccc',
-    backgroundColor: '#f0f0f0',
-    marginTop: '20px',
-  },
+    textArea: {
+        width: '100%',
+        height: '200px',
+        padding: '10px',
+        fontSize: '14px',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        resize: 'vertical',
+        marginTop: '20px',
+        boxSizing: 'border-box',
+    },
 };
 
 export default ImageGeneration;
