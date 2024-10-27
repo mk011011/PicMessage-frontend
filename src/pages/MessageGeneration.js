@@ -1,20 +1,40 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+// 메시지 생성 페이지 컴포넌트
 const MessageGenerationPage = () => {
   const [inputText, setInputText] = useState('');
   const [generatedMessage, setGeneratedMessage] = useState('');
+  const [selectedKeywords, setSelectedKeywords] = useState([]); // 선택된 키워드 상태 추가
+
+  const navigate = useNavigate();
+
+  const keywords = ['초대', '안내', '홍보', '안부', '명절인사', '감사', '사과', '환영'];
 
   const handleInputChange = (e) => {
     setInputText(e.target.value);
   };
 
   const handleGenerateMessage = () => {
-    // 메시지 생성 로직
-    setGeneratedMessage(`Generated message for: ${inputText}`);
+    setGeneratedMessage(inputText);
   };
 
   const handleUseMessage = () => {
-    alert('Using the generated message: ' + generatedMessage);
+    if (selectedKeywords.length > 0) {
+      // 선택된 키워드를 알림창에 표시
+      alert(`선택된 키워드: ${selectedKeywords.join(', ')}`);
+    } else {
+      alert('선택된 키워드가 없습니다.');
+    }
+    navigate('/', { state: { message: generatedMessage } });
+  };
+
+  const toggleKeywordSelection = (keyword) => {
+    setSelectedKeywords((prevSelected) =>
+      prevSelected.includes(keyword)
+        ? prevSelected.filter((k) => k !== keyword) // 이미 선택된 키워드이면 제거
+        : [...prevSelected, keyword] // 선택되지 않은 키워드이면 추가
+    );
   };
 
   return (
@@ -29,16 +49,27 @@ const MessageGenerationPage = () => {
             onChange={handleInputChange}
             style={styles.textArea}
           />
-          <div style={styles.keywordsSection}>
-            <h2>중요키워드 제시</h2>
-            <div style={styles.keywords}>
-              {['초대', '안내', '홍보', '안부', '명절인사', '감사', '사과', '환영'].map((keyword) => (
-                <button key={keyword} style={styles.keywordButton}>
+          
+          {/* 주요 키워드를 버튼으로 제공하는 영역 */}
+          <div style={styles.keywordContainer}>
+            <h3>주요 키워드 제시</h3>
+            <div style={styles.keywordButtons}>
+              {keywords.map((keyword) => (
+                <button
+                  key={keyword}
+                  onClick={() => toggleKeywordSelection(keyword)}
+                  style={{
+                    ...styles.keywordButton,
+                    backgroundColor: selectedKeywords.includes(keyword) ? '#b3c7ff' : '#e1e5f2', // 선택 시 색상 변화
+                  }}
+                >
                   {keyword}
                 </button>
               ))}
             </div>
           </div>
+          
+          {/* 메시지 생성 버튼 */}
           <button onClick={handleGenerateMessage} style={styles.generateButton}>
             메시지 생성
           </button>
@@ -47,9 +78,13 @@ const MessageGenerationPage = () => {
         {/* 오른쪽 섹션: 생성 결과 */}
         <div style={styles.column}>
           <h2>생성결과</h2>
-          <div style={styles.resultBox}>
-            {generatedMessage ? generatedMessage : '결과가 여기에 표시됩니다.'}
-          </div>
+          <textarea
+            style={styles.textArea}
+            placeholder="결과"
+            value={generatedMessage}
+            readOnly
+          />
+          {/* 메시지 사용 버튼 */}
           <button onClick={handleUseMessage} style={styles.useButton}>
             메시지사용
           </button>
@@ -59,6 +94,7 @@ const MessageGenerationPage = () => {
   );
 };
 
+// 스타일 객체 정의
 const styles = {
   container: {
     display: 'flex',
@@ -88,30 +124,21 @@ const styles = {
     border: '1px solid #ccc',
     fontSize: '16px',
   },
-  resultBox: {
-    width: '100%',
-    height: '150px',
-    padding: '10px',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    backgroundColor: '#f0f0f0',
-    fontSize: '16px',
-    marginBottom: '20px',
-  },
-  keywordsSection: {
+  keywordContainer: {
     marginTop: '20px',
   },
-  keywords: {
+  keywordButtons: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '10px',
+    marginTop: '10px',
   },
   keywordButton: {
-    padding: '10px 20px',
-    borderRadius: '20px',
-    border: '1px solid #ccc',
-    backgroundColor: '#f0f0f0',
+    padding: '8px 16px',
+    fontSize: '14px',
     cursor: 'pointer',
+    border: 'none',
+    borderRadius: '8px',
   },
   generateButton: {
     marginTop: '20px',
@@ -130,6 +157,8 @@ const styles = {
     border: 'none',
     borderRadius: '8px',
     alignSelf: 'center',
+    marginTop: '186px',
+
   },
 };
 
