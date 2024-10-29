@@ -20,13 +20,11 @@ const MessageGenerationPage = () => {
   };
 
   const handleUseMessage = () => {
-    if (selectedKeywords.length > 0) {
-      // 선택된 키워드를 알림창에 표시
-      alert(`선택된 키워드: ${selectedKeywords.join(', ')}`);
-    } else {
-      alert('선택된 키워드가 없습니다.');
-    }
-    navigate('/', { state: { message: generatedMessage } });
+    const alertMessage = `선택된 키워드: ${selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '없음'}\n\n입력된 메시지:\n${inputText}`;
+  
+    alert(alertMessage);
+  
+    navigate('/', { state: { message: generatedMessage } }); // generatedMessage를 state로 전달
   };
 
   const toggleKeywordSelection = (keyword) => {
