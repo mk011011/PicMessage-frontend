@@ -189,13 +189,13 @@ const ContactList = () => {
                                     </div>
                                     {isEditing === contact.id ? (
                                         <>
-                                            <p><strong>태그:</strong> <input name="tag" value={editData.tag} onChange={handleInputChange} style={{ width: '1000px', height: '30px' }} /></p>
+                                            <p><strong>특징:</strong> <input name="tag" value={editData.tag} onChange={handleInputChange} style={{ width: '1000px', height: '30px' }} /></p>
                                             <p><strong>메모:</strong> <input name="memo" value={editData.memo} onChange={handleInputChange} style={{ width: '1000px', height: '30px' }} /></p>
                                             <p><strong>어조:</strong> <input name="tone" value={editData.tone} onChange={handleInputChange} style={{ width: '1000px', height: '30px' }} /></p>
                                         </>
                                     ) : (
                                         <>
-                                            <p><strong>태그:</strong> {contact.tag}</p>
+                                            <p><strong>특징:</strong> {contact.tag}</p>
                                             <p><strong>메모:</strong> {contact.memo}</p>
                                             <p><strong>어조:</strong> {contact.tone}</p>
                                         </>

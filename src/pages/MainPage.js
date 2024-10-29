@@ -1,4 +1,6 @@
-import React from 'react';
+
+//메인 페이지
+import React, { useState } from 'react'; // useState 불러오기
 import ContactList from '../components/ContactList';
 import { useNavigate, useLocation } from 'react-router-dom'; // useLocation 추가
 import logo from '../assets/images/logo.png'; // 로고 이미지를 불러옵니다.
@@ -7,6 +9,8 @@ const MainPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 메시지를 받을 위치 훅
   const messageFromState = location.state?.message || ''; // 전달된 메시지 없을 경우 기본값 설정
+  const [message, setMessage] = useState(''); // 입력된 메시지를 상태로 관리
+
 
   return (
     <div style={styles.container}>
@@ -17,7 +21,7 @@ const MainPage = () => {
         <p>문자, 이미지 자동생성 서비스를 활용하여 편리하게 메시지를 전송하세요.</p>
       </div>
 
-      {/* 중간 섹션: 문자 자동생성, 이미지 자동생성 */}
+{/* 중간 섹션: 문자 자동생성, 이미지 자동생성 */}
       <div style={styles.row}>
         {/* 문자 자동생성 섹션 */}
         <div style={styles.section}>
@@ -25,8 +29,8 @@ const MainPage = () => {
           <textarea
             style={styles.textArea}
             placeholder="메시지를 입력하세요"
-            value={messageFromState} // 전달된 메시지를 표시
-            readOnly
+            value={message}
+            onChange={(e) => setMessage(e.target.value)} // 메시지 업데이트
           ></textarea>
           <button
             style={styles.button}
@@ -35,6 +39,7 @@ const MainPage = () => {
             문자 자동생성
           </button>
         </div>
+
 
         {/* 이미지 자동생성 섹션 */}
         <div style={styles.section}>
