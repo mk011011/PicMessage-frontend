@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [convertedText, setConvertedText] = useState("");
+  const [loading, setLoading] = useState(false); // 로딩 상태
 
   const currentContact = selectedContacts[currentIndex];
 
@@ -16,6 +18,57 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
     if (currentIndex < selectedContacts.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
+  };
+
+  const handleConvert = async () => {
+    if (!convertedText) {
+      alert("변환할 텍스트를 입력하세요.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const referenceMessage = `
+      생일 축하해! 내 친구! 
+      넌 세상에서 가장 소중한 사람 중 한 명이야. 
+      네가 항상 나를 웃게 해주고, 어려운 순간에는 힘이 되어줘서 고마워. 
+      앞으로도 지금처럼 우리의 우정이 더 깊어지고, 
+      행복한 시간들로 가득찬 일상을 함께 만들어가자!`;
+
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4", // GPT-4 사용
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful assistant. Use the provided message's tone and mood as inatspirion but do not copy the content. Generate a new message based on the user input.",
+            },
+            {
+              role: "user",
+              content: `Please rewrite the following message using the tone and mood similar to the reference message but keep the original message's intent intact. Original message: "${convertedText}". Reference message: "${referenceMessage}"`,
+            },
+          ],
+          max_tokens: 500,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+          },
+        }
+      );
+
+      setConvertedText(response.data.choices[0].message.content.trim());
+    } catch (error) {
+      console.error(
+        "API 호출 오류:",
+        error.response ? error.response.data : error.message
+      );
+      alert("텍스트 변환에 실패했습니다. 다시 시도해주세요.");
+    }
+    setLoading(false);
   };
 
   return (
@@ -55,8 +108,13 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
 
             <div style={styles.convertSection}>
               <span style={styles.convertLabel}>텍스트 변환</span>
-              <button type="button" style={styles.convertButton}>
-                변환
+              <button
+                type="button"
+                style={styles.convertButton}
+                onClick={handleConvert}
+                disabled={loading} // 로딩 시 버튼 비활성화
+              >
+                {loading ? "변환 중..." : "변환"}
               </button>
             </div>
 
@@ -109,6 +167,32 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
       </div>
     </div>
   );
+};
+
+const testOpenAIConnection = async () => {
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/completions",
+      {
+        model: "text-davinci-003",
+        prompt: "Say hello!",
+        max_tokens: 5,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+        },
+      }
+    );
+
+    console.log("API Response:", response.data);
+  } catch (error) {
+    console.error(
+      "API 호출 오류:",
+      error.response ? error.response.data : error.message
+    );
+  }
 };
 
 const styles = {
