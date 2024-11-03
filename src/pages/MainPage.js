@@ -8,9 +8,8 @@ import logo from '../assets/images/logo.png'; // 로고 이미지를 불러옵�
 const MainPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // 메시지를 받을 위치 훅
-  const messageFromState = location.state?.message || ''; // 전달된 메시지 없을 경우 기본값 설정
-  const [message, setMessage] = useState(''); // 입력된 메시지를 상태로 관리
-
+  const messageFromState = location.state?.message || ''; // 전달된 메시지 값
+  const [message, setMessage] = useState(messageFromState); // 전달된 메시지 초기값으로 설정
 
   return (
     <div style={styles.container}>
@@ -46,11 +45,11 @@ const MainPage = () => {
           <label style={styles.label}>이미지</label>
           <div style={styles.imageBox}>이미지가 여기에 표시됩니다.</div>
           <button
-            style={styles.button}
-            onClick={() => navigate('/image-generation')}
+                 style={styles.button}
+                 onClick={() => navigate('/image-generation', { state: { message } })} // 상태 전달
           >
             이미지 자동생성
-          </button>
+            </button>
         </div>
       </div>
 
