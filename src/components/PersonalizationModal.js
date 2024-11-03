@@ -28,26 +28,33 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
 
     setLoading(true);
     try {
-      const referenceMessage = `
-      생일 축하해! 내 친구! 
-      넌 세상에서 가장 소중한 사람 중 한 명이야. 
-      네가 항상 나를 웃게 해주고, 어려운 순간에는 힘이 되어줘서 고마워. 
-      앞으로도 지금처럼 우리의 우정이 더 깊어지고, 
-      행복한 시간들로 가득찬 일상을 함께 만들어가자!`;
+      // 선택된 말투에 맞는 지시사항을 설정
+      const toneInstruction =
+        {
+          친근한: "친근하고 다정한 말투로",
+          격식있는: "격식 있는 말투로",
+          유쾌한: "유쾌하고 밝은 말투로",
+          정중한: "정중하고 공손한 말투로",
+          친구: "친구한테 하는 말투로",
+          힙합: "힙합하는 사람 말투로",
+          여자친구: "여자친구한테 하는 말투로",
+          오바마: "오바마같은 말투로",
+          아재: "아재같은 말투로",
+        }[currentContact.tone] || "기본 말투로";
 
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: "gpt-4", // GPT-4 사용
+          model: "gpt-4-turbo",
           messages: [
             {
               role: "system",
-              content:
-                "You are a helpful assistant. Use the provided message's tone and mood as inatspirion but do not copy the content. Generate a new message based on the user input.",
+              content: "You are a helpful assistant.",
             },
             {
               role: "user",
-              content: `Please rewrite the following message using the tone and mood similar to the reference message but keep the original message's intent intact. Original message: "${convertedText}". Reference message: "${referenceMessage}"`,
+              content: `Please rewrite the following message in a tone that is ${toneInstruction}. 
+              Keep the original message's intent intact. Original message: "${convertedText}".`,
             },
           ],
           max_tokens: 500,
@@ -167,32 +174,6 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
       </div>
     </div>
   );
-};
-
-const testOpenAIConnection = async () => {
-  try {
-    const response = await axios.post(
-      "https://api.openai.com/v1/completions",
-      {
-        model: "text-davinci-003",
-        prompt: "Say hello!",
-        max_tokens: 5,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-        },
-      }
-    );
-
-    console.log("API Response:", response.data);
-  } catch (error) {
-    console.error(
-      "API 호출 오류:",
-      error.response ? error.response.data : error.message
-    );
-  }
 };
 
 const styles = {
