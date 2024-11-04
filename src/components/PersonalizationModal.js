@@ -3,10 +3,28 @@ import axios from "axios";
 
 const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [convertedText, setConvertedText] = useState("");
-  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [convertedTexts, setConvertedTexts] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [selectedTone, setSelectedTone] = useState("기본 말투로"); // 선택된 톤 상태
 
   const currentContact = selectedContacts[currentIndex];
+
+  // 톤 선택 버튼을 렌더링하기 위한 톤 목록
+  const tones = [
+    { label: "친근한 말투", instruction: "친근하고 다정한 말투로" },
+    { label: "격식있는 말투", instruction: "격식 있는 말투로" },
+    { label: "유쾌한 말투", instruction: "유쾌하고 밝은 말투로" },
+    { label: "정중한 말투", instruction: "정중하고 공손한 말투로" },
+    { label: "친구 말투", instruction: "친구한테 하는 말투로" },
+    { label: "힙합 말투", instruction: "힙합하는 사람 말투로" },
+    { label: "여자친구 말투", instruction: "여자친구한테 하는 말투로" },
+    { label: "오바마 말투", instruction: "오바마같은 말투로" },
+    { label: "아재 말투", instruction: "아재같은 말투로" },
+  ];
+
+  const handleToneSelection = (tone) => {
+    setSelectedTone(tone);
+  };
 
   const handlePrev = () => {
     if (currentIndex > 0) {
@@ -21,27 +39,14 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
   };
 
   const handleConvert = async () => {
-    if (!convertedText) {
+    const textToConvert = convertedTexts[currentContact.id] || "";
+    if (!textToConvert) {
       alert("변환할 텍스트를 입력하세요.");
       return;
     }
 
     setLoading(true);
     try {
-      // 선택된 말투에 맞는 지시사항을 설정
-      const toneInstruction =
-        {
-          친근한: "친근하고 다정한 말투로",
-          격식있는: "격식 있는 말투로",
-          유쾌한: "유쾌하고 밝은 말투로",
-          정중한: "정중하고 공손한 말투로",
-          친구: "친구한테 하는 말투로",
-          힙합: "힙합하는 사람 말투로",
-          여자친구: "여자친구한테 하는 말투로",
-          오바마: "오바마같은 말투로",
-          아재: "아재같은 말투로",
-        }[currentContact.tone] || "기본 말투로";
-
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -53,8 +58,7 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
             },
             {
               role: "user",
-              content: `Please rewrite the following message in a tone that is ${toneInstruction}. 
-              Keep the original message's intent intact. Original message: "${convertedText}".`,
+              content: `Please rewrite the following message in a tone that is ${selectedTone}. Original message: "${textToConvert}".`,
             },
           ],
           max_tokens: 500,
@@ -67,7 +71,10 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
         }
       );
 
-      setConvertedText(response.data.choices[0].message.content.trim());
+      setConvertedTexts((prev) => ({
+        ...prev,
+        [currentContact.id]: response.data.choices[0].message.content.trim(),
+      }));
     } catch (error) {
       console.error(
         "API 호출 오류:",
@@ -76,6 +83,14 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
       alert("텍스트 변환에 실패했습니다. 다시 시도해주세요.");
     }
     setLoading(false);
+  };
+
+  const handleTextChange = (e) => {
+    const { value } = e.target;
+    setConvertedTexts((prev) => ({
+      ...prev,
+      [currentContact.id]: value,
+    }));
   };
 
   return (
@@ -103,14 +118,27 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
                 style={styles.inputField}
               />
             </div>
-            <div style={styles.inputGroup}>
-              <label>어조:</label>
-              <input
-                type="text"
-                value={currentContact.tone}
-                readOnly
-                style={styles.inputField}
-              />
+
+            <div style={styles.toneSelection}>
+              <label>어조 선택:</label>
+              <div style={styles.toneButtons}>
+                {tones.map((tone) => (
+                  <button
+                    key={tone.label}
+                    type="button"
+                    style={{
+                      ...styles.toneButton,
+                      backgroundColor:
+                        selectedTone === tone.instruction ? "#007bff" : "#ccc",
+                      color:
+                        selectedTone === tone.instruction ? "white" : "black",
+                    }}
+                    onClick={() => handleToneSelection(tone.instruction)}
+                  >
+                    {tone.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div style={styles.convertSection}>
@@ -119,7 +147,7 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
                 type="button"
                 style={styles.convertButton}
                 onClick={handleConvert}
-                disabled={loading} // 로딩 시 버튼 비활성화
+                disabled={loading}
               >
                 {loading ? "변환 중..." : "변환"}
               </button>
@@ -127,8 +155,8 @@ const PersonalizationModal = ({ selectedContacts, closeModal, onComplete }) => {
 
             <textarea
               style={styles.textArea}
-              value={convertedText}
-              onChange={(e) => setConvertedText(e.target.value)}
+              value={convertedTexts[currentContact.id] || ""}
+              onChange={handleTextChange}
               placeholder="여기에 텍스트가 표시됩니다."
             />
           </form>
@@ -193,9 +221,11 @@ const styles = {
     backgroundColor: "white",
     padding: "30px",
     borderRadius: "12px",
-    width: "500px",
+    width: "600px", // 모달창 너비를 더 넓게 설정
+    height: "700px", // 모달창 높이를 더 크게 설정
     boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
     zIndex: 1001,
+    overflowY: "auto", // 내용이 넘칠 경우 스크롤 가능하도록 설정
   },
   title: {
     marginBottom: "20px",
@@ -218,6 +248,21 @@ const styles = {
     border: "1px solid #ccc",
     width: "100%",
     boxSizing: "border-box",
+  },
+  toneSelection: {
+    marginBottom: "15px",
+  },
+  toneButtons: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "5px",
+  },
+  toneButton: {
+    padding: "8px 10px",
+    borderRadius: "5px",
+    border: "none",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
   },
   convertSection: {
     display: "flex",
@@ -244,7 +289,7 @@ const styles = {
     borderRadius: "6px",
     border: "1px solid #ccc",
     width: "100%",
-    height: "150px",
+    height: "300px", // 입력창 높이를 더 크게 설정
     resize: "none",
     boxSizing: "border-box",
   },
@@ -255,12 +300,13 @@ const styles = {
     marginTop: "20px",
   },
   navButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#66b2ff", // 연한 파란색
     color: "white",
     border: "none",
     padding: "10px 20px",
     borderRadius: "6px",
     cursor: "pointer",
+    transition: "background-color 0.3s",
   },
   pageInfo: {
     fontSize: "16px",
@@ -272,7 +318,7 @@ const styles = {
     marginTop: "20px",
   },
   closeButton: {
-    backgroundColor: "#6c757d", // 중립적인 회색
+    backgroundColor: "#6c757d",
     color: "white",
     border: "none",
     padding: "12px 20px",
@@ -280,12 +326,9 @@ const styles = {
     cursor: "pointer",
     width: "48%",
     transition: "background-color 0.3s",
-    ":hover": {
-      backgroundColor: "#5a6268", // 호버 시 조금 어두운 회색
-    },
   },
   completeButton: {
-    backgroundColor: "#0056b3", // 진한 파란색
+    backgroundColor: "#0056b3",
     color: "white",
     border: "none",
     padding: "12px 20px",
@@ -293,21 +336,6 @@ const styles = {
     cursor: "pointer",
     width: "48%",
     transition: "background-color 0.3s",
-    ":hover": {
-      backgroundColor: "#004494", // 호버 시 더 진한 파란색
-    },
-  },
-  navButton: {
-    backgroundColor: "#66b2ff", // 연한 파란색
-    color: "white",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    ":hover": {
-      backgroundColor: "#3399ff", // 호버 시 조금 더 진한 파란색
-    },
   },
 };
 
