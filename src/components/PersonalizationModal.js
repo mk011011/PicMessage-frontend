@@ -77,16 +77,11 @@ const PersonalizationModal = ({
         }
       );
 
+      //ContactList의 convertedTexts값 변경
       setConvertedTexts((prev) => ({
         ...prev,
         [currentContact.id]: response.data.choices[0].message.content.trim(),
       }));
-
-      // const convertedMessage = "변환된 메시지 예시"; // 변환 결과 예시
-      // setConvertedTexts((prev) => ({
-      //   ...prev,
-      //   [currentContact.id]: convertedMessage,
-      // }));
     } catch (error) {
       console.error(
         "API 호출 오류:",
