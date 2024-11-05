@@ -56,7 +56,7 @@ const MainPage = () => {
       </div>
 
       {/* 주소록 */}
-      <ContactList />
+      <ContactList message={message} setMessage={setMessage} />
 
       {/* 하단부: 챗봇 사용하기, 전송하기 버튼 */}
       <div style={styles.container}>
